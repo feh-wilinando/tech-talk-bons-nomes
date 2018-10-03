@@ -1,10 +1,10 @@
 from typing import Dict
 
-from main.csv_mapper import CsvMapper, SomeModel
+from main.adapter.csv_line_mapper import CsvLineMapper, SomeModel
 from tests.models.products.product import Product
 
 
-class ProductMapper(CsvMapper):
+class ProductLineMapper(CsvLineMapper):
     def to_model(self, line_content: Dict) -> SomeModel:
         id_ = line_content['id']
         name = line_content['name']

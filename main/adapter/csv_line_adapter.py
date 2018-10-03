@@ -1,13 +1,13 @@
 from typing import Dict, List
 
-from main.csv_mapper import CsvMapper, SomeModel
-from main.csv_validator import CsvValidator
+from main.adapter.csv_line_mapper import CsvLineMapper, SomeModel
+from main.adapter.csv_line_validator import CsvLineValidator
 from main.infrastructure.message import Message
 
 
-class CsvAdapter(CsvMapper, CsvValidator):
+class CsvLineAdapter(CsvLineMapper, CsvLineValidator):
 
-    def __init__(self, validator: CsvValidator, mapper: CsvMapper):
+    def __init__(self, validator: CsvLineValidator, mapper: CsvLineMapper):
         self.validator = validator
         self.mapper = mapper
 

@@ -1,10 +1,10 @@
 from typing import Dict, List
 
-from main.csv_validator import CsvValidator
+from main.adapter.csv_line_validator import CsvLineValidator
 from main.infrastructure.message import Message, MessageCategory
 
 
-class ProductValidator(CsvValidator):
+class ProductLineValidator(CsvLineValidator):
     def validate(self, line_content: Dict, line_number: int) -> List[Message]:
         error = []
 

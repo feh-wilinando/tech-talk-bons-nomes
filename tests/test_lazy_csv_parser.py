@@ -3,13 +3,13 @@ from random import randint, shuffle
 
 from pytest import fixture, mark
 
-from main.csv_adapter import CsvAdapter
+from main.adapter.csv_line_adapter import CsvLineAdapter
 from main.infrastructure.message import MessageCategory
 from main.lazy_csv_parser import LazyCsvParser
 from tests.models.products.product import Product
 from tests.models.products.product_factory import ProductFactory
-from tests.product_mapper import ProductMapper
-from tests.product_validator import ProductValidator
+from tests.product_mapper import ProductLineMapper
+from tests.product_validator import ProductLineValidator
 
 
 def generate_csv_for_products_with_header_and_line_format(all_products, header, line_format):
@@ -73,10 +73,10 @@ class TestLazyCsvParser:
 
     @fixture
     def product_adapter(self):
-        mapper = ProductMapper()
-        validator = ProductValidator()
+        mapper = ProductLineMapper()
+        validator = ProductLineValidator()
 
-        return CsvAdapter(validator, mapper)
+        return CsvLineAdapter(validator, mapper)
 
     @fixture
     def parser(self, product_adapter, fields):
