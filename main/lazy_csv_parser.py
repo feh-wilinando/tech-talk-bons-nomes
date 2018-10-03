@@ -54,7 +54,7 @@ class LazyCsvParser:
 
         for line_dict in reader:
 
-            is_valid = yield from self._validate(reader, line_dict)
+            is_valid = yield from self._apply_several_validations_in_current_line(reader, line_dict)
 
             if is_valid:
                 try:
@@ -64,7 +64,7 @@ class LazyCsvParser:
             else:
                 break
 
-    def _validate(self, reader, line_dict: Dict):
+    def _apply_several_validations_in_current_line(self, reader, line_dict: Dict):
         fields = line_dict.keys()
 
         if len(fields) > len(self._fields):
