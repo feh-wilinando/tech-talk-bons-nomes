@@ -54,8 +54,7 @@ class LazyCsvParser:
 
         for line_dict in reader:
 
-            is_valid = yield from self._return_validation_of_fields_length_greater_or_equal_than_self_fields_and_if_all_fields_are_present_in_line_and_validate_all_inputs__Yield_left_messages_to_caller_if_any_validation_fails(
-                reader, line_dict)
+            is_valid = yield from self._validate_structural_and_read_data__Yield_left_messages_to_caller_if_any_validation_fails(reader, line_dict)
 
             if is_valid:
                 try:
@@ -65,34 +64,61 @@ class LazyCsvParser:
             else:
                 break
 
-    def _return_validation_of_fields_length_greater_or_equal_than_self_fields_and_if_all_fields_are_present_in_line_and_validate_all_inputs__Yield_left_messages_to_caller_if_any_validation_fails(
-            self, reader, line_dict: Dict):
-        fields = line_dict.keys()
+    def _validate_structural_and_read_data__Yield_left_messages_to_caller_if_any_validation_fails(self, reader, line_dict: Dict):
 
-        if len(fields) > len(self._fields):
-            message = Message(category=MessageCategory.VALIDATION, key='import_csv_enough_fields', args=[reader.line_num, self._fields])
+        structure_is_valid = yield from self._validate_structural(reader, line_dict)
 
-            yield Left([message])
-
+        if not structure_is_valid:
             return False
 
-        values = line_dict.values()
+        can_read_data = yield from self._validate_read_data(reader, line_dict)
 
-        if not all(values):
-            missing_keys = [key for key, value in line_dict.items() if not value]
+        return can_read_data
 
-            message = Message(category=MessageCategory.VALIDATION, key='import_csv_missing_fields',
-                              args=[reader.line_num, self._fields, missing_keys])
-
-            yield Left([message])
-
-            return False
-
-        violations = self._adapter.validate(line_dict, line_number=reader.line_num)
+    def _validate_read_data(self, reader: DictReader, line: Dict) -> bool:
+        violations = self._adapter.validate(line, line_number=reader.line_num)
 
         if violations:
             yield Left(violations)
 
             return False
 
+        return True
+
+    def _validate_structural(self, reader: DictReader, line: Dict) -> bool:
+        is_valid_fields_length = yield from self._validate_read_fields_length(reader, line)
+
+        if not is_valid_fields_length:
+            return False
+
+        all_fields_required = yield from self._validate_all_fields_required(reader, line)
+
+        if not all_fields_required:
+            return False
+
+        return True
+
+    def _validate_read_fields_length(self, reader: DictReader, line: Dict) -> bool:
+        fields = line.keys()
+
+        if len(fields) > len(self._fields):
+            message = Message(category=MessageCategory.VALIDATION, key='import_csv_enough_fields', args=[reader.line_num, reader.fieldnames])
+
+            yield Left([message])
+
+            return False
+
+        return True
+
+    def _validate_all_fields_required(self, reader: DictReader, line: Dict) -> bool:
+        values = line.values()
+
+        if not all(values):
+            missing_keys = [key for key, value in line.items() if not value]
+
+            message = Message(category=MessageCategory.VALIDATION, key='import_csv_missing_fields', args=[reader.line_num, reader.fieldnames, missing_keys])
+
+            yield Left([message])
+
+            return False
         return True
